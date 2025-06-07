@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Proyecto_Taqueria")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9c574edc61530b86dde30b299e99aaadb590fe1d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Proyecto_Taqueria")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Proyecto_Taqueria")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
