@@ -1,0 +1,161 @@
+﻿@page "/"
+
+<div class="contenedor-principal">
+    <div class="contenedor-botones">
+        <!-- Botón Alta -->
+        <a href="/alta" class="boton-extra-ancho verde">
+            <span class="icono">📥</span>
+            <div class="contenido">
+                <span class="titulo-boton">Registrar Producto</span>
+                <span class="subtitulo">Agregar nuevos items al inventario</span>
+            </div>
+        </a>
+
+        <!-- Botón Baja -->
+        <a href="/baja" class="boton-extra-ancho rojo">
+            <span class="icono">🗑️</span>
+            <div class="contenido">
+                <span class="titulo-boton">Eliminar Producto</span>
+                <span class="subtitulo">Dar de baja items obsoletos</span>
+            </div>
+        </a>
+
+        <!-- Botón Actualización -->
+        <a href="/actualizacion" class="boton-extra-ancho naranja">
+            <span class="icono">✏️</span>
+            <div class="contenido">
+                <span class="titulo-boton">Actualizar Existencias</span>
+                <span class="subtitulo">Modificar cantidades o datos</span>
+            </div>
+        </a>
+
+        <!-- Botón Consulta -->
+        <a href="/consultas" class="boton-extra-ancho azul">
+            <span class="icono">📊</span>
+            <div class="contenido">
+                <span class="titulo-boton">Consultar Inventario</span>
+                <span class="subtitulo">Ver stock actual y reportes</span>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+    /* Estilos generales */
+    .contenedor-principal {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 60px); /* Resta la altura del NavBar */
+        padding: 2rem;
+        background: #f5f7fa;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .contenedor-botones {
+        width: 90%;
+        max-width: 800px; /* Ancho máximo aumentado */
+    }
+
+    /* Estilo de botones */
+    .boton-extra-ancho {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        cursor: pointer;
+        border-left: 6px solid;
+    }
+
+        .boton-extra-ancho:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+    /* Elementos internos */
+    .icono {
+        font-size: 2.5rem;
+        margin-right: 2rem;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .contenido {
+        flex-grow: 1;
+    }
+
+    .titulo-boton {
+        display: block;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2d3748;
+    }
+
+    .subtitulo {
+        font-size: 1rem;
+        color: #4a5568;
+        line-height: 1.4;
+    }
+
+    /* Variantes de color */
+    .verde {
+        background: #f0fff4;
+        border-left-color: #38a169;
+    }
+
+    .rojo {
+        background: #fff5f5;
+        border-left-color: #e53e3e;
+    }
+
+    .naranja {
+        background: #fffaf0;
+        border-left-color: #dd6b20;
+    }
+
+    .azul {
+        background: #ebf8ff;
+        border-left-color: #3182ce;
+    }
+
+    .verde:hover {
+        background: #e6ffed;
+    }
+
+    .rojo:hover {
+        background: #ffebeb;
+    }
+
+    .naranja:hover {
+        background: #fff5eb;
+    }
+
+    .azul:hover {
+        background: #e1f0ff;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .contenedor-botones {
+            width: 95%;
+        }
+
+        .boton-extra-ancho {
+            padding: 1.5rem;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .icono {
+            margin-right: 0;
+            margin-bottom: 1rem;
+            font-size: 2.2rem;
+        }
+    }
+</style>

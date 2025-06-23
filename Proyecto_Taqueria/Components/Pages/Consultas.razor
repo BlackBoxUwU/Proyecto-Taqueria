@@ -1,0 +1,137 @@
+﻿@page "/Consultas"
+@using Proyecto_Taqueria.Data.Modelos
+@using Proyecto_Taqueria.Data
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Contexto
+@rendermode InteractiveServer
+
+<div class="contenedor-principal">
+    <div class="contenedor-formulario">
+        <h3 class="titulo-pagina">Consulta de Productos</h3>
+
+        @if (productos == null)
+        {
+            <div class="alert alert-info">Cargando productos...</div>
+        }
+        else if (!productos.Any())
+        {
+            <div class="alert alert-info">
+                No hay productos registrados en el inventario.
+            </div>
+        }
+        else
+        {
+            <div class="form-group row mb-4">
+                <label for="filtroProducto" class="col-md-2 col-form-label">Filtrar:</label>
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <InputText id="filtroProducto" @bind-Value="terminoFiltro"
+                                   class="form-control" placeholder="ID, Nombre o Categoría..." />
+                        <button class="btn btn-primary" @onclick="AplicarFiltroConBoton">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                    <small class="text-muted">Busque por ID, nombre o categoría del producto</small>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(mensajeFeedback))
+            {
+                <div class="alert @mensajeCssClass mt-3" role="alert">
+                    @mensajeFeedback
+                </div>
+            }
+
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Stock</th>
+                            <th>Mínimo</th>
+                            <th>Máximo</th>
+                            <th>Caducidad</th>
+                            <th>Llegada</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var producto in productosFiltrados)
+                        {
+                            <tr>
+                                <td>@producto.Id</td>
+                                <td>@producto.Nombre</td>
+                                <td>@producto.Categoria</td>
+                                <td>@producto.CantidadStock</td>
+                                <td>@producto.MinimoStock</td>
+                                <td>@producto.MaximoStock</td>
+                                <td>@(producto.FechaCaducidad?.ToShortDateString() ?? "N/A")</td>
+                                <td>@(producto.FechaLlegada?.ToShortDateString() ?? "N/A")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Producto>? productos; // Guarda todos los productos
+    private List<Producto>? productosFiltrados; // Guarda los productos después de aplicar el filtro
+    private string terminoFiltro = string.Empty;
+    private string mensajeFeedback = string.Empty;
+    private string mensajeCssClass = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        try
+        {
+            productos = await Contexto.Productos.OrderBy(p => p.Nombre).ToListAsync();
+            // Al inicio, la lista filtrada es igual a la lista completa
+            productosFiltrados = new List<Producto>(productos);
+            mensajeFeedback = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            mensajeFeedback = $"Error al cargar productos: {ex.Message}";
+            mensajeCssClass = "alert alert-danger";
+            Console.WriteLine($"Error al cargar productos: {ex.Message}");
+        }
+    }
+
+    private void AplicarFiltroConBoton()
+    {
+        if (string.IsNullOrWhiteSpace(terminoFiltro))
+        {
+            // Si el campo de filtro está vacío, mostramos todos los productos
+            productosFiltrados = new List<Producto>(productos ?? new List<Producto>());
+        }
+        else
+        {
+            // Filtramos por ID, Nombre o Categoría, ignorando mayúsculas/minúsculas en texto
+            productosFiltrados = productos?
+                .Where(p => p.Id.ToString().Contains(terminoFiltro, StringComparison.OrdinalIgnoreCase) ||
+                            p.Nombre.Contains(terminoFiltro, StringComparison.OrdinalIgnoreCase) ||
+                            p.Categoria.Contains(terminoFiltro, StringComparison.OrdinalIgnoreCase))
+                .ToList() ?? new List<Producto>();
+        }
+
+        // Mostrar mensaje si no hay resultados para el filtro
+        if (!productosFiltrados.Any() && !string.IsNullOrWhiteSpace(terminoFiltro))
+        {
+            mensajeFeedback = "No se encontraron productos que coincidan con el filtro.";
+            mensajeCssClass = "alert alert-warning";
+        }
+        else
+        {
+            mensajeFeedback = string.Empty; // Limpiar mensaje si hay resultados o el filtro está vacío
+        }
+    }
+}

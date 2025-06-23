@@ -1,0 +1,204 @@
+﻿@page "/alta"
+@using Proyecto_Taqueria.Data.Modelos
+@using Proyecto_Taqueria.Data
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@inject AppDbContext Contexto
+@rendermode InteractiveServer
+
+<div class="contenedor-principal">
+    <div class="contenedor-formulario">
+        <h3 class="titulo-pagina">Alta de Producto</h3>
+
+        <EditForm Model="@nuevoProducto" OnValidSubmit="@ManejarEnvioFormulario">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="form-group row">
+                <label for="productoId" class="col-md-3 col-form-label">ID Producto:</label>
+                <div class="col-md-9">
+                    <InputText id="productoId" @bind-Value="idMostradoEnFormulario" class="form-control" readonly />
+                    <small class="text-muted">Este ID se asigna automáticamente al guardar el producto.</small>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="nombreProducto" class="col-md-3 col-form-label">Nombre:</label>
+                <div class="col-md-9">
+                    <InputText id="nombreProducto" @bind-Value="nuevoProducto.Nombre" class="form-control" />
+                    <ValidationMessage For="@(() => nuevoProducto.Nombre)" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="categoriaProducto" class="col-md-3 col-form-label">Categoría:</label>
+                <div class="col-md-9">
+                    <InputText id="categoriaProducto" @bind-Value="nuevoProducto.Categoria" class="form-control" />
+                    <ValidationMessage For="@(() => nuevoProducto.Categoria)" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="cantidadStock" class="col-md-3 col-form-label">Cantidad en stock:</label>
+                <div class="col-md-9">
+                    <InputNumber id="cantidadStock" @bind-Value="nuevoProducto.CantidadStock" class="form-control" />
+                    <ValidationMessage For="@(() => nuevoProducto.CantidadStock)" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="minimoStock" class="col-md-3 col-form-label">Stock mínimo:</label>
+                <div class="col-md-9">
+                    <InputNumber id="minimoStock" @bind-Value="nuevoProducto.MinimoStock" class="form-control" />
+                    <ValidationMessage For="@(() => nuevoProducto.MinimoStock)" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="maximoStock" class="col-md-3 col-form-label">Stock máximo:</label>
+                <div class="col-md-9">
+                    <InputNumber id="maximoStock" @bind-Value="nuevoProducto.MaximoStock" class="form-control" />
+                    <ValidationMessage For="@(() => nuevoProducto.MaximoStock)" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="fechaCaducidad" class="col-md-3 col-form-label">Fecha de caducidad:</label>
+                <div class="col-md-9">
+                    <InputDate id="fechaCaducidad" @bind-Value="nuevoProducto.FechaCaducidad" class="form-control" />
+                    <ValidationMessage For="@(() => nuevoProducto.FechaCaducidad)" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="fechaLlegada" class="col-md-3 col-form-label">Fecha de llegada:</label>
+                <div class="col-md-9">
+                    <InputDate id="fechaLlegada" @bind-Value="nuevoProducto.FechaLlegada" class="form-control" />
+                    <ValidationMessage For="@(() => nuevoProducto.FechaLlegada)" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <div class="col-md-9 offset-md-3">
+                    <button type="submit" class="btn btn-primary">Guardar Producto</button>
+                </div>
+            </div>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(mensajeFeedback))
+        {
+            <div class="alert @mensajeCssClass mt-4" role="alert">
+                @mensajeFeedback
+            </div>
+        }
+
+        <h3 class="titulo-pagina mt-5">Productos Existentes</h3>
+
+        @if (productos == null)
+        {
+            <div class="alert alert-info">Cargando productos...</div>
+        }
+        else if (!productos.Any())
+        {
+            <div class="alert alert-warning">No hay productos registrados.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Stock</th>
+                            <th>Stock Mín.</th>
+                            <th>Stock Máx.</th>
+                            <th>Fecha Caducidad</th>
+                            <th>Fecha Llegada</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var producto in productos)
+                        {
+                            <tr>
+                                <td>@producto.Id</td>
+                                <td>@producto.Nombre</td>
+                                <td>@producto.Categoria</td>
+                                <td>@producto.CantidadStock</td>
+                                <td>@producto.MinimoStock</td>
+                                <td>@producto.MaximoStock</td>
+                                <td>@(producto.FechaCaducidad?.ToShortDateString() ?? "N/A")</td>
+                                <td>@(producto.FechaLlegada?.ToShortDateString() ?? "N/A")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private Producto nuevoProducto = new Producto();
+    private List<Producto>? productos;
+    private string mensajeFeedback = string.Empty;
+    private string mensajeCssClass = string.Empty;
+    private string idMostradoEnFormulario = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+        idMostradoEnFormulario = string.Empty;
+    }
+
+    private async Task CargarProductos()
+    {
+        try
+        {
+            // CAMBIO: Ordenar por ID en orden descendente para que el más reciente aparezca arriba
+            productos = await Contexto.Productos.OrderByDescending(p => p.Id).ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            mensajeFeedback = $"Error al cargar productos: {ex.Message}";
+            mensajeCssClass = "alert alert-danger";
+            Console.WriteLine($"Error al cargar productos: {ex.Message}");
+        }
+    }
+
+    private async Task ManejarEnvioFormulario()
+    {
+        mensajeFeedback = string.Empty;
+        mensajeCssClass = string.Empty;
+        
+        await GuardarProducto();
+    }
+
+    private async Task GuardarProducto()
+    {
+        try
+        {
+            Contexto.Productos.Add(nuevoProducto);
+            await Contexto.SaveChangesAsync();
+
+            int idGenerado = nuevoProducto.Id; // El ID ya se asignó por EF Core
+
+            idMostradoEnFormulario = idGenerado.ToString();
+            mensajeFeedback = $"Producto '{nuevoProducto.Nombre}' guardado correctamente. ID: {idGenerado}.";
+            mensajeCssClass = "alert alert-success";
+            Console.WriteLine($"Producto '{nuevoProducto.Nombre}' guardado correctamente. ID: {idGenerado}.");
+
+            // Limpia el formulario y recarga la tabla
+            nuevoProducto = new Producto();
+            idMostradoEnFormulario = string.Empty;
+            await CargarProductos(); // Esto recargará la lista con el nuevo orden
+        }
+        catch (Exception ex)
+        {
+            mensajeFeedback = $"Error al guardar el producto: {ex.Message}";
+            mensajeCssClass = "alert alert-danger";
+            Console.WriteLine($"Error al guardar: {ex.Message}");
+        }
+    }
+}

@@ -1,0 +1,303 @@
+﻿@page "/actualizacion"
+@using Proyecto_Taqueria.Data.Modelos
+@using Proyecto_Taqueria.Data
+@using Microsoft.EntityFrameworkCore
+@inject AppDbContext Contexto
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms 
+@using System.ComponentModel.DataAnnotations 
+
+<div class="contenedor-principal">
+    <div class="contenedor-formulario">
+        <h3 class="titulo-pagina">Actualización de Producto</h3>
+
+        <div class="form-group row">
+            <label for="buscarProducto" class="col-md-3 col-form-label">Buscar Producto:</label>
+            <div class="col-md-9">
+                <div class="input-group">
+                    <InputText id="buscarProducto" @bind-Value="terminoBusqueda"
+                               class="form-control" placeholder="ID o Nombre del producto" />
+                    <button class="btn btn-primary" type="button" @onclick="BuscarProductos">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                </div>
+                <small class="text-muted">Ingrese el ID o nombre del producto que desea actualizar.</small>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(mensajeFeedback))
+        {
+            <div class="alert @mensajeCssClass mt-4" role="alert">
+                @mensajeFeedback
+            </div>
+        }
+
+        @* AQUI SE MUESTRA LA TABLA CON LOS RESULTADOS DE LA BÚSQUEDA *@
+        @if (productosEncontrados != null && productosEncontrados.Any())
+        {
+            <h4 class="titulo-pagina mt-5">Resultados de la Búsqueda</h4>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Stock</th>
+                            <th>Mínimo</th>
+                            <th>Máximo</th>
+                            <th>Caducidad</th>
+                            <th>Llegada</th>
+                            <th>Acciones</th> @* Columna para el botón de edición *@
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var producto in productosEncontrados)
+                        {
+                            <tr>
+                                <td>@producto.Id</td>
+                                <td>@producto.Nombre</td>
+                                <td>@producto.Categoria</td>
+                                <td>@producto.CantidadStock</td>
+                                <td>@producto.MinimoStock</td>
+                                <td>@producto.MaximoStock</td>
+                                <td>@(producto.FechaCaducidad?.ToShortDateString() ?? "N/A")</td>
+                                <td>@(producto.FechaLlegada?.ToShortDateString() ?? "N/A")</td>
+                                <td class="text-center">
+                                    <button class="btn btn-info btn-sm"
+                                            @onclick="() => CargarProductoParaEdicion(producto)">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(terminoBusqueda) && productosEncontrados != null && !productosEncontrados.Any())
+        {
+            <div class="alert alert-info mt-4" role="alert">
+                No se encontraron productos que coincidan con "@terminoBusqueda".
+            </div>
+        }
+
+        @* --- Formulario de Edición (visible solo cuando se selecciona un producto) --- *@
+        @if (productoAEditar != null)
+        {
+            <h4 class="mt-5">Editando Producto: @productoAEditar.Nombre (ID: @productoAEditar.Id)</h4>
+            <EditForm Model="@productoAEditar" OnValidSubmit="ActualizarProducto" class="mt-4">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group mb-3">
+                    <label for="idProducto">ID Producto:</label>
+                    @* El ID es de solo lectura. Se muestra, pero no se puede modificar. *@
+                    <InputNumber id="idProducto" @bind-Value="productoAEditar.Id" class="form-control" readonly />
+                    <ValidationMessage For="@(() => productoAEditar.Id)" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="nombreProducto">Nombre:</label>
+                    <InputText id="nombreProducto" @bind-Value="productoAEditar.Nombre" class="form-control" />
+                    <ValidationMessage For="@(() => productoAEditar.Nombre)" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="categoriaProducto">Categoría:</label>
+                    <InputText id="categoriaProducto" @bind-Value="productoAEditar.Categoria" class="form-control" />
+                    <ValidationMessage For="@(() => productoAEditar.Categoria)" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="cantidadStock">Stock:</label>
+                    <InputNumber id="cantidadStock" @bind-Value="productoAEditar.CantidadStock" class="form-control" />
+                    <ValidationMessage For="@(() => productoAEditar.CantidadStock)" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="minimoStock">Stock Mínimo:</label>
+                    <InputNumber id="minimoStock" @bind-Value="productoAEditar.MinimoStock" class="form-control" />
+                    <ValidationMessage For="@(() => productoAEditar.MinimoStock)" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="maximoStock">Stock Máximo:</label>
+                    <InputNumber id="maximoStock" @bind-Value="productoAEditar.MaximoStock" class="form-control" />
+                    <ValidationMessage For="@(() => productoAEditar.MaximoStock)" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="fechaCaducidad">Fecha Caducidad:</label>
+                    <InputDate id="fechaCaducidad" @bind-Value="productoAEditar.FechaCaducidad" class="form-control" />
+                    <ValidationMessage For="@(() => productoAEditar.FechaCaducidad)" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="fechaLlegada">Fecha Llegada:</label>
+                    <InputDate id="fechaLlegada" @bind-Value="productoAEditar.FechaLlegada" class="form-control" />
+                    <ValidationMessage For="@(() => productoAEditar.FechaLlegada)" />
+                </div>
+
+                <button type="submit" class="btn btn-success me-2">Guardar Cambios</button>
+                <button type="button" class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
+            </EditForm>
+        }
+
+    </div>
+</div>
+
+@code {
+    private string terminoBusqueda = string.Empty;
+    private List<Producto>? productosEncontrados;
+    private Producto? productoAEditar; // El producto que se está editando
+    private string mensajeFeedback = string.Empty;
+    private string mensajeCssClass = string.Empty;
+
+    private async Task BuscarProductos()
+    {
+        // Limpiar estados anteriores
+        mensajeFeedback = string.Empty;
+        mensajeCssClass = string.Empty;
+        productosEncontrados = null;
+        productoAEditar = null; // Ocultar el formulario de edición al iniciar una nueva búsqueda
+
+        if (string.IsNullOrWhiteSpace(terminoBusqueda))
+        {
+            mensajeFeedback = "Por favor, ingrese un ID o nombre para buscar.";
+            mensajeCssClass = "alert alert-warning";
+            return;
+        }
+
+        try
+        {
+            List<Producto> resultados = new List<Producto>();
+
+            // Intentar buscar por ID primero
+            if (int.TryParse(terminoBusqueda, out int idBusqueda))
+            {
+                var productoPorId = await Contexto.Productos.FirstOrDefaultAsync(p => p.Id == idBusqueda);
+                if (productoPorId != null)
+                {
+                    resultados.Add(productoPorId);
+                }
+            }
+
+            // Siempre buscar por nombre, incluso si se encontró por ID, para mostrar todas las coincidencias
+            var productosPorNombre = await Contexto.Productos
+                .Where(p => p.Nombre.ToLower().Contains(terminoBusqueda.ToLower()))
+                .ToListAsync();
+
+            // Combinar resultados y evitar duplicados (si se encontró por ID y por nombre)
+            foreach (var prod in productosPorNombre)
+            {
+                if (!resultados.Any(r => r.Id == prod.Id))
+                {
+                    resultados.Add(prod);
+                }
+            }
+
+            if (!resultados.Any())
+            {
+                mensajeFeedback = $"No se encontraron productos que coincidan con \"{terminoBusqueda}\".";
+                mensajeCssClass = "alert alert-warning";
+            }
+            else
+            {
+                // CAMBIO: Ordenar los resultados por ID en orden DESCENDENTE para que el más nuevo aparezca arriba
+                productosEncontrados = resultados.OrderByDescending(p => p.Id).ToList();
+                mensajeFeedback = $"Se encontraron {productosEncontrados.Count} producto(s) que coinciden con \"{terminoBusqueda}\".";
+                mensajeCssClass = "alert alert-info";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeFeedback = $"Error al buscar productos: {ex.Message}";
+            mensajeCssClass = "alert alert-danger";
+            Console.WriteLine($"Error al buscar: {ex.Message}");
+        }
+    }
+
+    // Método para cargar los datos del producto seleccionado en el formulario de edición
+    private void CargarProductoParaEdicion(Producto producto)
+    {
+        // Creamos una copia del producto para que los cambios en el formulario
+        // no afecten directamente la lista mostrada hasta que se guarden.
+        productoAEditar = new Producto
+            {
+                Id = producto.Id,
+                Nombre = producto.Nombre,
+                Categoria = producto.Categoria,
+                CantidadStock = producto.CantidadStock,
+                MinimoStock = producto.MinimoStock,
+                MaximoStock = producto.MaximoStock,
+                FechaCaducidad = producto.FechaCaducidad,
+                FechaLlegada = producto.FechaLlegada
+            // Asegúrate de copiar todas las demás propiedades si las tienes en tu modelo Producto
+            };
+        mensajeFeedback = string.Empty; // Limpiar mensaje de búsqueda anterior
+    }
+
+    // Método para actualizar el producto en la base de datos
+    private async Task ActualizarProducto()
+    {
+        if (productoAEditar == null)
+        {
+            mensajeFeedback = "Error: No hay producto seleccionado para actualizar.";
+            mensajeCssClass = "alert alert-danger";
+            return;
+        }
+
+        try
+        {
+            // Encontrar la entidad original en el contexto o base de datos
+            var productoOriginal = await Contexto.Productos.FindAsync(productoAEditar.Id);
+
+            if (productoOriginal != null)
+            {
+                // Actualizar solo las propiedades modificables
+                productoOriginal.Nombre = productoAEditar.Nombre;
+                productoOriginal.Categoria = productoAEditar.Categoria;
+                productoOriginal.CantidadStock = productoAEditar.CantidadStock;
+                productoOriginal.MinimoStock = productoAEditar.MinimoStock;
+                productoOriginal.MaximoStock = productoAEditar.MaximoStock;
+                productoOriginal.FechaCaducidad = productoAEditar.FechaCaducidad;
+                productoOriginal.FechaLlegada = productoAEditar.FechaLlegada;
+                // Asegúrate de actualizar TODAS las demás propiedades editables aquí
+
+                await Contexto.SaveChangesAsync(); // Guarda los cambios
+                mensajeFeedback = $"Producto '{productoOriginal.Nombre}' (ID: {productoOriginal.Id}) actualizado correctamente.";
+                mensajeCssClass = "alert alert-success";
+
+                productoAEditar = null; // Ocultar el formulario
+                await BuscarProductos(); // Recargar la lista de resultados para ver los cambios
+            }
+            else
+            {
+                mensajeFeedback = $"Error: El producto con ID '{productoAEditar.Id}' no fue encontrado para actualizar.";
+                mensajeCssClass = "alert alert-danger";
+            }
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Manejo de concurrencia: si otro usuario modificó el registro.
+            mensajeFeedback = "El producto que intentas actualizar ha sido modificado o eliminado por otro usuario. Por favor, realiza una nueva búsqueda e inténtalo de nuevo.";
+            mensajeCssClass = "alert alert-danger";
+        }
+        catch (Exception ex)
+        {
+            mensajeFeedback = $"Error al actualizar el producto: {ex.Message}";
+            mensajeCssClass = "alert alert-danger";
+            Console.WriteLine($"Error al actualizar: {ex.Message}");
+        }
+    }
+
+    // Método para cancelar la edición
+    private void CancelarEdicion()
+    {
+        productoAEditar = null; // Ocultar el formulario de edición
+        mensajeFeedback = "Edición de producto cancelada.";
+        mensajeCssClass = "alert alert-info";
+    }
+}
